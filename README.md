@@ -23,7 +23,7 @@ Parallel agents, git worktrees, hooks, reviewer agents — that's table stakes f
 A solo-engineered B2B SaaS (freight-logistics-adjacent), early and honest about it — days old, not years:
 
 - **Stack** — Next.js, TypeScript, Supabase/PostgreSQL, deployed on Vercel.
-- **Data pipeline** — a scheduled ingestion job pulling federal carrier/broker registration data (a public FMCSA dataset) via a paginated bulk API, upserted into Postgres in batches — the kind of unglamorous, has-to-actually-work-correctly plumbing real data products run on.
+- **Data pipeline** — a scheduled ingestion job pulling public federal registration data via a paginated bulk API, upserted into Postgres in batches — the kind of unglamorous, has-to-actually-work-correctly plumbing real data products run on.
 - Built with the same harness and discipline described above, from day one — not retrofitted later.
 
 Also building a second, industry-agnostic project in the AI-assisted document-generation space — same harness, same discipline, earlier stage. I've prototyped LLM document-extraction (field-level schema generation, OCR-vs-semantic-extraction trade-offs) — that's at the prototype stage and I'm precise about that distinction, in writing and in interviews.
