@@ -2,37 +2,29 @@
 
 I build full-stack software by **architecting and directing AI coding agents**, not hand-authoring every line. I own the system design, the security model, the verification harness, and every judgment call; the agents produce the implementation under that direction. This is the job now, and I treat it like an engineering discipline, not a party trick.
 
-My production code is in private repos (client/product work — can't open-source it). What's public: the commit density above, my open-source activity on **Anthropic's own `claude-code` repo**, and the write-up below of how I actually run this.
+My production code is in private repos (product work — can't open-source it). What's public: the commit density above, and the write-up below of how I actually run this.
 
 ---
 
-## How I direct the agentic harness
+## Harness engineering: building the factory, not just using the tools
 
-The interesting part isn't a single feature — it's the **system I built to ship reliably with AI agents**. Treating an LLM as a fast junior engineer only works if you build the rails that keep it honest.
+Parallel agents, git worktrees, hooks, reviewer agents — that's table stakes for anyone doing serious AI-assisted development now. What I actually spend my time on is a level up from that: **treating the AI-collaboration process itself as a system to measure, verify, and improve — not just prompt better.**
 
-**Parallel agents in isolated git worktrees.** Multiple coding agents work concurrently, each in its own worktree, so independent work streams never collide. I orchestrate the fan-out and own the merge.
+**Match the verification method to the claim, don't review everything the same way.** A mechanical check exists (test, lint, grep) → run it, don't trust a self-report. No mechanical check exists but it's a logic/design question → adversarial review, argued in the abstract. It's a claim about how the system *behaves over time* → replay it against real historical logs and count actual outcomes, don't just reason about whether it sounds right. Most agent setups only have the middle one, if that.
 
-**Deterministic governance via hooks.** Some steps must fire every time, not "when the model remembers." I wrap those as harness hooks (pre/post tool-call, session-start, stop) so policy is enforced mechanically — secret-scan gates, lint gates, session-close rituals — instead of relying on the model's discretion.
+**Automation is gated by "is this actually a foregone conclusion" — with a hard rule against deciding that for myself.** The system will only auto-apply a fix when a prior written rule (or real data) already settled the answer with zero judgment left in it. It is explicitly not allowed to decide on its own that something's "obviously fine, ship it" — that's the exact failure mode it's built to prevent. Most self-improving-agent setups don't draw a hard line between "safe to automate" and "still needs a human call"; this one does, and it's enforced structurally, not by discipline.
 
-**Tool-restricted reviewer agents.** I run read-only reviewer agents (Read/Grep/Glob only, no write access) for a fresh-context adversarial pass before anything merges. The reviewer can't "fix" what it finds — it can only report, which keeps the review honest.
-
-**Custom skills.** Repeatable procedures (design reviews, issue decomposition, close-out rituals) are codified as skills the agents invoke, so the same task is done the same way every time.
-
-**Issue-to-model routing.** Work is matched to the cheapest model that can do it well — mechanical edits to a small model, judgment-heavy design and review to a larger one — so cost tracks actual task difficulty.
-
-**The non-negotiable: never accept model output blind.** Every agent-produced change is suspect until proven — I read the diff, run the suite, and adversarially review the load-bearing parts. The actual skill here is catching the mistakes the agent introduces: a plausible-but-wrong refactor, a test that passes for the wrong reason, a security regression that looks fine. That judgment doesn't transfer to the agent. It's the job.
+**I backtest governance changes against real history before trusting them, the same way you'd validate a model change.** Before trusting that a new rule actually improves behavior, I mine real past sessions, apply the new rule to what actually happened, and count fixes vs. regressions — not just reason about whether the rule sounds right in the abstract. One recent change was validated against ~950 real historical sessions before I trusted it.
 
 ---
 
 ## What that harness builds
 
-A solo-engineered B2B SaaS (freight-logistics-adjacent), currently in active development, data model through CI/CD:
+A solo-engineered B2B SaaS (freight-logistics-adjacent), early and honest about it — days old, not years:
 
-- **Backend** — FastAPI, Pydantic v2, SQLAlchemy 2.0, Alembic migrations, PostgreSQL.
-- **Frontend** — React 19, TypeScript, Vite, Tailwind, React Hook Form + Zod.
-- **Auth, done properly, not "a login form"** — argon2id hashing, JWT access tokens with refresh-token rotation, token-theft detection via atomic compare-and-swap, JTI-based revocation, httpOnly same-origin cookies, OWASP security headers.
-- **CI/CD** — GitHub Actions with branch protection: lint/format/security-scan/test on every push, schema-drift and ERD-drift checks, `gitleaks` on every commit, ~150 tests across backend and frontend.
-- **28 ADRs** documenting the *why* behind the load-bearing decisions, not just the *what*.
+- **Stack** — Next.js, TypeScript, Supabase/PostgreSQL, deployed on Vercel.
+- **Data pipeline** — a scheduled ingestion job pulling federal carrier/broker registration data (a public FMCSA dataset) via a paginated bulk API, upserted into Postgres in batches — the kind of unglamorous, has-to-actually-work-correctly plumbing real data products run on.
+- Built with the same harness and discipline described above, from day one — not retrofitted later.
 
 Also building a second, industry-agnostic project in the AI-assisted document-generation space — same harness, same discipline, earlier stage. I've prototyped LLM document-extraction (field-level schema generation, OCR-vs-semantic-extraction trade-offs) — that's at the prototype stage and I'm precise about that distinction, in writing and in interviews.
 
