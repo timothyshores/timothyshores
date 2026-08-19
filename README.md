@@ -18,7 +18,7 @@ Freight brokers send rate confirmations as PDFs. The carrier retypes them into a
 
 **Stack.** Python, FastAPI, Pydantic, SQLAlchemy 2.0, Alembic, PostgreSQL 18 on the backend. React 19, TypeScript, TanStack Router, Vite, Tailwind CSS 4, shadcn/ui on the front end. Railway, Vercel, Docker, GitHub Actions for infra.
 
-**Verification.** 721 tests (627 pytest, 94 Vitest) against 9.6K lines of production code, a 1.3:1 test-to-code ratio, across 33 architecture decision records.
+**Verification.** 721 tests (627 pytest, 94 Vitest) against 10.2K lines of production code, a 1.3:1 test-to-code ratio, across 33 architecture decision records.
 
 ---
 
