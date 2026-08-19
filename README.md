@@ -18,13 +18,13 @@ Freight brokers send rate confirmations as PDFs. The carrier retypes them into a
 
 **Stack.** Python, FastAPI, Pydantic, SQLAlchemy 2.0, Alembic, PostgreSQL 18 on the backend. React 19, TypeScript, TanStack Router, Vite, Tailwind CSS 4, shadcn/ui on the front end. Railway, Vercel, Docker, GitHub Actions for infra.
 
-**Verification.** 721 tests (627 pytest, 94 Vitest) against 10.2K lines of production code, a 1.3:1 test-to-code ratio, across 33 architecture decision records.
+**Verification.** 721 tests (627 pytest, 94 Vitest) against 10.2K lines of production code, a 1.33:1 test-to-code ratio, across 33 architecture decision records.
 
 ---
 
-## Multi-agent orchestration
+## Multi-agent development workflow
 
-The product is built by a fleet of coding agents I designed and operate, not by hand.
+The product is built by a fleet of coding agents I designed and operate, not by hand. This is how I build, not a feature of the product itself.
 
 **The architecture.** Parallel Claude Code agents run in isolated git worktrees so concurrent work cannot corrupt a shared tree. An issue-to-model classifier routes each unit of work to the right capability tier, so cheap mechanical work does not burn expensive-model budget. Custom skills encode repeatable procedures; lifecycle hooks enforce deterministic guardrails that prose instructions alone demonstrably fail to hold. **Seven orchestrated MCP servers** connect the fleet to issue tracking, version control, deployment, docs, and knowledge base.
 
