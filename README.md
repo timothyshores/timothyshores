@@ -1,24 +1,24 @@
 # Tim Shores, AI Engineer
 
-I design and operate agentic AI systems in production, end to end: the LLM pipeline, the evaluation gate that decides whether its output is trustworthy, the auth and data layer under it, and the deployment it runs on. Solo, and shipped.
+I design and build AI systems end to end: the LLM pipeline, the evaluation gate that decides whether its output is trustworthy, the auth and data layer under it, and the deployment it runs on. Solo-built, deployed, and pre-revenue.
 
 Production code lives in private repos. This is the write-up of what I built and how.
 
 ---
 
-## RateCon to Invoice, a production B2B AI product
+## RateCon to Invoice, a B2B AI product (pre-revenue)
 
-Freight brokers send rate confirmations as PDFs. The carrier retypes them into an invoice by hand, several times a week, daily on short loads. I ran discovery with a working owner-operator, scoped that manual step into a product, and took it zero to one. Live on Railway and Vercel.
+Freight brokers send rate confirmations as PDFs. The carrier retypes them into an invoice by hand, several times a week, daily on short loads. I ran discovery with a working owner-operator, scoped that manual step into a product, and took it zero to one. Deployed on Railway and Vercel, at design-partner stage with no paying customers yet.
 
 **The extraction pipeline.** Documents reach the system two ways: a manual upload endpoint and an inbound-email webhook with Svix signature verification. Both funnel into an LLM extraction stage on the Anthropic Claude API using structured output, landing typed freight fields (load number, rate, lane, dates) into Postgres. Email ingestion means the product meets carriers where the work already happens, in their inbox, rather than asking them to change behavior.
 
 **The evaluation harness, and why it is the real engineering.** Extraction accuracy is scored against a hand-labeled corpus with tiered targets: **100% on money-path fields (load number, total rate), 85-90% on everything else.** That split is the whole design. Getting an LLM approximately right is easy; deciding which fields are *not allowed* to be approximately right, and building the gate that enforces it, is the job. It runs as a human-reviewed release gate. I deliberately kept live-API accuracy scoring out of CI, because a nondeterministic check does not belong in a blocking pipeline, and a flaky gate is a gate people learn to ignore.
 
-**Production concerns, not prototype concerns.** argon2id password hashing, JWT rotation with atomic token-theft detection and family-wide revocation, a constant-time decoy hash that defeats user-enumeration timing attacks, OWASP-hardened headers. CI/CD on GitHub Actions with schema-drift and secret-scanning gates.
+**Security and delivery concerns, not prototype concerns.** argon2id password hashing, JWT rotation with atomic token-theft detection and family-wide revocation, a constant-time decoy hash that defeats user-enumeration timing attacks, OWASP-hardened headers. CI/CD on GitHub Actions with schema-drift and secret-scanning gates.
 
 **Stack.** Python, FastAPI, Pydantic, SQLAlchemy 2.0, Alembic, PostgreSQL 18 on the backend. React 19, TypeScript, TanStack Router, Vite, Tailwind CSS 4, shadcn/ui on the front end. Railway, Vercel, Docker, GitHub Actions for infra.
 
-**Verification.** 721 tests (627 pytest, 94 Vitest) against 10.2K lines of production code, a 1.33:1 test-to-code ratio, across 33 architecture decision records.
+**Verification.** 900+ tests (pytest, Vitest, Playwright) against 13.2K lines of application code, a 1.33:1 test-to-code ratio, 33 architecture decision records, 400+ commits.
 
 ---
 
@@ -40,7 +40,7 @@ The product is built by a fleet of coding agents I designed and operate, not by 
 
 Stated plainly, because being caught inflating a claim costs more than volunteering a limit.
 
-No RAG or vector store in this product. Extraction is structured-output against a known schema, not retrieval, so a vector layer would have been architecture theater. No payments integration and no human review/correction UI. The eval harness is a release gate I review personally, not a CI gate.
+No RAG or vector store in this product. Extraction is structured-output against a known schema, not retrieval, so a vector layer would have been architecture theater. No payments integration, no human review/correction UI, and no paying customers yet. The eval harness is a release gate I review personally, not a CI gate.
 
 ---
 
